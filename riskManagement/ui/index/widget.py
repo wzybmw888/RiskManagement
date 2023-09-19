@@ -1,5 +1,5 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QAction
+from PyQt6.QtGui import QAction, QColor
 from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel, QHBoxLayout, QFrame, QTableWidget, \
     QTableWidgetItem, QGridLayout, QAbstractItemView
 
@@ -37,22 +37,17 @@ class MainPage(QMainWindow):
 
         # 创建垂直布局
         layout = QVBoxLayout(self)
+
         data = [
-            {"name": "账户1",
+            {"name": "账户1", "balance": "10000", "available": "90000",
              "contract": ["合约1", "合约2", "合约1", "合约2", "合约1", "合约2", "合约1", "合约2", "合约1", "合约2",
                           "合约1", "合约2"], "profile": ["1%", "1%"]},
-            {"name": "账户2", "contract": ["合约1", "合约2"], "profile": ["2%", "2%"]},
-            {"name": "账户3", "contract": ["合约1", "合约2"], "profile": ["3%", "3%"]},
-            {"name": "账户3", "contract": ["合约1", "合约2"], "profile": ["3%", "3%"]},
-            {"name": "账户3", "contract": ["合约1", "合约2"], "profile": ["3%", "3%"]},
-            {"name": "账户3", "contract": ["合约1", "合约2"], "profile": ["3%", "3%"]},
-            {"name": "账户3", "contract": ["合约1", "合约2"], "profile": ["3%", "3%"]},
-            {"name": "账户3", "contract": ["合约1", "合约2"], "profile": ["3%", "3%"]},
-            {"name": "账户3", "contract": ["合约1", "合约2"], "profile": ["3%", "3%"]},
-            {"name": "账户3", "contract": ["合约1", "合约2"], "profile": ["3%", "3%"]},
-            {"name": "账户3", "contract": ["合约1", "合约2"], "profile": ["3%", "3%"]},
-            {"name": "账户3", "contract": ["合约1", "合约2"], "profile": ["3%", "3%"]},
-            {"name": "账户3", "contract": ["合约1", "合约2"], "profile": ["3%", "3%"]},
+            {"name": "账户2", "balance": "10000", "available": "90000", "contract": ["合约1", "合约2"],
+             "profile": ["2%", "2%"]},
+            {"name": "账户3", "balance": "10000", "available": "90000", "contract": ["合约1", "合约2"],
+             "profile": ["3%", "3%"]},
+            {"name": "账户3", "balance": "10000", "available": "90000", "contract": ["合约1", "合约2"],
+             "profile": ["3%", "3%"]},
         ]
         # 创建多个账户表格
         account1_table = self.create_table(data)
@@ -83,6 +78,14 @@ class MainPage(QMainWindow):
             table.setItem(index, 0, QTableWidgetItem(data["name"]))
             table.setItem(index, 1, QTableWidgetItem("合约"))
             table.setItem(index + 1, 1, QTableWidgetItem("盈亏"))
+            item = QTableWidgetItem("账户余额：")
+            item.setForeground(QColor("red"))
+            table.setItem(index + 2, 0, item)
+            table.setItem(index + 2, 1, QTableWidgetItem(data["balance"]))
+            item2 = QTableWidgetItem("可用余额：")
+            item2.setForeground(QColor("red"))
+            table.setItem(index + 2, 2, item2)
+            table.setItem(index + 2, 3, QTableWidgetItem(data["available"]))
 
             for col, c in enumerate(data["contract"]):
                 item = QTableWidgetItem(c)
@@ -92,7 +95,7 @@ class MainPage(QMainWindow):
                 item = QTableWidgetItem(p)
                 table.setItem(index + 1, col + 2, item)
 
-            index += 2
+            index += 3
 
         return table
 

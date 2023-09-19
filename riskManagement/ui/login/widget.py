@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout
     QHBoxLayout
 
 from riskManagement.ui.index.widget import MainPage
+from riskManagement.utils import create_shortcut
 
 
 class LoginPage(QWidget):
@@ -51,7 +52,7 @@ class LoginPage(QWidget):
         layout.addWidget(self.dynamic_groupbox)
 
         form_layout = QGridLayout()
-        form_layout.setContentsMargins(150, 20, 150, 20)
+        form_layout.setContentsMargins(100, 0, 100, 0)
         form_layout.addWidget(self.name_label, 0, 0, 1, 1)
         form_layout.addWidget(self.name_input, 0, 1, 1, 1)
         form_layout.addWidget(self.password_label, 1, 0, 1, 1)
@@ -59,7 +60,7 @@ class LoginPage(QWidget):
 
         # 创建水平布局，将确认提交按钮和返回按钮放在同一行
         h_box = QHBoxLayout()
-        h_box.setContentsMargins(150, 0, 150, 20)
+        h_box.setContentsMargins(100, 20, 100, 20)
         h_box.addWidget(self.login_button)
         h_box.addWidget(self.exit_button)
 
@@ -79,10 +80,11 @@ class LoginPage(QWidget):
 
         # 设置动态信息
         self.dynamic_textedit.setText(
-            "1、Youtube视频采集器V1.0.0发布了\n2、Youtube视频采集器V2.0.0正在开发中\n3、欢迎加入我们的社区")
+            "1、RM V1.0.0发布了\n2、RMV2.0.0正在开发中\n3、欢迎加入我们的社区")
 
         # 连接登录按钮的点击事件
         self.login_button.clicked.connect(self.login)
+        self.password_input.returnPressed.connect(self.login)
 
     def login(self):
         """

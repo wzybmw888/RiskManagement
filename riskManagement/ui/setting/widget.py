@@ -1,5 +1,23 @@
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QTableWidget, QTableWidgetItem, \
-    QPushButton, QHeaderView, QLineEdit, QLabel, QDialog
+    QPushButton, QHeaderView, QLineEdit, QLabel, QDialog, QMessageBox
+
+from config import DB_PATH
+from riskManagement.utils import AccountTable
+
+
+def write_data_to_database(table):
+    db_account = AccountTable(DB_PATH)
+    for row in range(table.rowCount()):
+        account_name = table.item(row, 0).text()
+        transaction_account = table.item(row, 1).text()
+        transaction_password = table.item(row, 2).text()
+        fund_password = table.item(row, 3).text()
+        if (account_name is not None
+                and transaction_account is not None
+                and transaction_password is not None
+                and fund_password is not None):
+            db_account.insert_account(account_name, transaction_account, transaction_password, fund_password)
+    db_account.close_connection()
 
 
 class SettingsPage(QDialog):
@@ -14,49 +32,137 @@ class SettingsPage(QDialog):
         tab_widget = QTabWidget()
 
         # 账户页
-        account_page = AccountWidget()
+        self.account_page = AccountWidget()
 
         # 风控设置页
         risk_page = RiskWidget()
 
-        tab_widget.addTab(account_page, "账户")
+        tab_widget.addTab(self.account_page, "账户")
         tab_widget.addTab(risk_page, "风控")
 
         main_layout.addWidget(tab_widget)
 
-        # 确定和取消按钮
-        button_layout = QHBoxLayout()
-        confirm_button = QPushButton("确定")
-        cancel_button = QPushButton("取消")
-        button_layout.addWidget(confirm_button)
-        button_layout.addWidget(cancel_button)
-
-        main_layout.addLayout(button_layout)
-
         self.setLayout(main_layout)
+
+    def confirm(self):
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("确认提交")
+        msg_box.setText("确认提交数据吗？")
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+
+        yes_button = msg_box.button(QMessageBox.StandardButton.Yes)
+        yes_button.setText("是")
+        no_button = msg_box.button(QMessageBox.StandardButton.No)
+        no_button.setText("否")
+
+        msg_box.exec()
+
+        if msg_box.clickedButton() == yes_button:
+            pass
 
 
 class AccountWidget(QWidget):
     def __init__(self):
         super().__init__()
         account_layout = QVBoxLayout()
-        account_table = QTableWidget()
-        account_table.setColumnCount(4)
-        account_table.verticalHeader().setVisible(False)  # 取消显示行号
-        account_table.setHorizontalHeaderLabels(["账户名称", "交易账号", "交易密码", "资金密码"])
+        button_layout = QHBoxLayout()
+        add_button = QPushButton("新增")
+        delete_button = QPushButton("删除账户")
+        update_button = QPushButton("更新账户")
+        add_account_button = QPushButton("提交")
+        button_layout.addWidget(add_button)
+        button_layout.addWidget(delete_button)
+        button_layout.addWidget(update_button)
+        button_layout.addWidget(add_account_button)
+
+        account_layout.addLayout(button_layout)
+        add_button.clicked.connect(self.addRow)
+        delete_button.clicked.connect(self.deleteAccount)
+        update_button.clicked.connect(self.updateAccount)
+        add_account_button.clicked.connect(self.addAccount)
+
+        self.account_table = QTableWidget()
+        self.account_table.setColumnCount(4)
+        self.account_table.verticalHeader().setVisible(False)  # 取消显示行号
+        self.account_table.setHorizontalHeaderLabels(["账户名称", "交易账号", "交易密码", "资金密码"])
         # 设置表头的拉伸模式
-        account_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        account_table.setRowCount(5)  # 设置行数，这里假设有5条账户信息
+        self.account_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
-        # 填充表格数据
-        for row in range(5):
-            for column in range(4):
-                item = QTableWidgetItem(f"数据{row}-{column}")
-                account_table.setItem(row, column, item)
-
-        account_layout.addWidget(account_table)
+        account_layout.addWidget(self.account_table)
 
         self.setLayout(account_layout)
+        self.db_account = AccountTable(DB_PATH)
+        self.initializeTable()
+
+    def initializeTable(self):
+        # 获取数据库中的账户数据
+        accounts = self.db_account.select_all_accounts()
+        for row, data in enumerate(accounts):
+            self.account_table.insertRow(row)
+
+            account_name_item = QTableWidgetItem(data[1])
+            self.account_table.setItem(row, 0, account_name_item)
+
+            transaction_account_item = QTableWidgetItem(data[2])
+            self.account_table.setItem(row, 1, transaction_account_item)
+
+            transaction_password_item = QTableWidgetItem(data[3])
+            self.account_table.setItem(row, 2, transaction_password_item)
+
+            fund_password_item = QTableWidgetItem(data[4])
+            self.account_table.setItem(row, 3, fund_password_item)
+
+    def addRow(self):
+        row_count = self.account_table.rowCount()
+        self.account_table.insertRow(row_count)
+
+    def addAccount(self):
+        current_row = self.account_table.currentRow()
+        account_name = self.account_table.item(current_row, 0).text()
+        transaction_account = self.account_table.item(current_row, 1).text()
+        transaction_password = self.account_table.item(current_row, 2).text()
+        fund_password = self.account_table.item(current_row, 3).text()
+        print(account_name, transaction_account, transaction_password, fund_password)
+
+        self.db_account.insert_account(account_name, transaction_account, transaction_password, fund_password)
+
+    def deleteAccount(self):
+        selected_ranges = self.account_table.selectedRanges()
+
+        if len(selected_ranges) == 0:
+            QMessageBox.warning(self, "删除账户", "请先选择要删除的账户")
+            return
+
+        rows_to_delete = []
+        for selected_range in selected_ranges:
+            for row in range(selected_range.topRow(), selected_range.bottomRow() + 1):
+                rows_to_delete.append(row)
+
+        rows_to_delete.sort(reverse=True)  # 从后往前删除，确保删除不会影响索引
+        print(rows_to_delete)
+        for row in rows_to_delete:
+            if self.account_table.item(row, 0):
+                account_name = self.account_table.item(row, 0).text()
+                self.db_account.delete_account(account_name)
+            self.account_table.removeRow(row)
+
+    def updateAccount(self):
+        for row in range(self.account_table.rowCount()):
+            account_name_item = self.account_table.item(row, 0)
+            transaction_account_item = self.account_table.item(row, 1)
+            transaction_password_item = self.account_table.item(row, 2)
+            fund_password_item = self.account_table.item(row, 3)
+
+            account_name = account_name_item.text()
+            transaction_account = transaction_account_item.text()
+            transaction_password = transaction_password_item.text()
+            fund_password = fund_password_item.text()
+
+            self.db_account.update_account(account_name, transaction_account, transaction_password, fund_password)
+
+    def closeEvent(self, event):
+        self.db_account.close_connection()
+        event.accept()
 
 
 class RiskWidget(QWidget):
