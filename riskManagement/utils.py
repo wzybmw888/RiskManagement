@@ -15,11 +15,12 @@ class TradeTable:
         create_table_query = '''
         CREATE TABLE IF NOT EXISTS trade (
             id INTEGER PRIMARY KEY,
-            account_name TEXT,
+            account_name TEXT UNIQUE,
             total_amount REAL,
             available_amount REAL,
             contract TEXT,
-            contract_change TEXT
+            contract_change TEXT,
+            FOREIGN KEY (account_name) REFERENCES account(account_name)
         )
         '''
         self.cursor.execute(create_table_query)
@@ -52,6 +53,21 @@ class TradeTable:
         self.cursor.execute(select_data_query)
         return self.cursor.fetchall()
 
+    def insert_or_update_account(self, account_name, balance, available, contract, pnl_percent):
+        try:
+            # 构建插入或更新语句
+            sql = """
+            INSERT OR REPLACE INTO accounts (account_name, balance, available, contract, pnl_percent) 
+            VALUES (?, ?, ?, ?, ?)
+            """
+            # 执行插入或更新操作
+            self.cursor.execute(sql, (account_name, balance, available, contract, pnl_percent))
+            # 提交事务
+            self.conn.commit()
+        except Exception as e:
+            # 发生错误时回滚事务
+            self.conn.rollback()
+
     def close_connection(self):
         self.cursor.close()
         self.conn.close()
@@ -67,10 +83,11 @@ class AccountTable:
         create_table_query = '''
         CREATE TABLE IF NOT EXISTS account (
             id INTEGER PRIMARY KEY,
-            account_name TEXT,
+            account_name TEXT UNIQUE,
             transaction_account TEXT,
             transaction_password TEXT,
-            fund_password TEXT
+            fund_password TEXT,
+            FOREIGN KEY (account_name) REFERENCES account(account_name)
         )
         '''
         self.cursor.execute(create_table_query)
@@ -117,7 +134,7 @@ class RiskTable:
         create_table_query = '''
         CREATE TABLE IF NOT EXISTS risk (
             id INTEGER PRIMARY KEY,
-            account_name TEXT,
+            account_name TEXT UNIQUE,
             equity REAL,
             position_loss REAL,
             FOREIGN KEY (account_name) REFERENCES account(account_name)
@@ -152,9 +169,25 @@ class RiskTable:
         self.cursor.execute(select_data_query)
         return self.cursor.fetchall()
 
+    def insert_or_update_risk(self, account_name, equity, position_loss):
+        try:
+            # 构建插入或更新语句
+            sql = """
+            INSERT OR REPLACE INTO risk (account_name, equity, position_loss) 
+            VALUES (?, ?, ?)
+            """
+            # 执行插入或更新操作
+            self.cursor.execute(sql, (account_name, equity, position_loss))
+            # 提交事务
+            self.conn.commit()
+        except Exception as e:
+            # 发生错误时回滚事务
+            self.conn.rollback()
+
     def close_connection(self):
         self.cursor.close()
         self.conn.close()
+
 
 def create_shortcut(target, key):
     shortcut = QShortcut(QKeySequence(key), target)

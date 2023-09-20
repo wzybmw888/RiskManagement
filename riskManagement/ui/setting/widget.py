@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QTa
     QPushButton, QHeaderView, QLineEdit, QLabel, QDialog, QMessageBox
 
 from config import DB_PATH
-from riskManagement.utils import AccountTable
+from riskManagement.utils import AccountTable, RiskTable
 
 
 def write_data_to_database(table):
@@ -122,29 +122,18 @@ class AccountWidget(QWidget):
         transaction_account = self.account_table.item(current_row, 1).text()
         transaction_password = self.account_table.item(current_row, 2).text()
         fund_password = self.account_table.item(current_row, 3).text()
-        print(account_name, transaction_account, transaction_password, fund_password)
 
         self.db_account.insert_account(account_name, transaction_account, transaction_password, fund_password)
 
     def deleteAccount(self):
-        selected_ranges = self.account_table.selectedRanges()
+        current_row = self.account_table.currentRow()
 
-        if len(selected_ranges) == 0:
+        if current_row < 0:
             QMessageBox.warning(self, "删除账户", "请先选择要删除的账户")
             return
-
-        rows_to_delete = []
-        for selected_range in selected_ranges:
-            for row in range(selected_range.topRow(), selected_range.bottomRow() + 1):
-                rows_to_delete.append(row)
-
-        rows_to_delete.sort(reverse=True)  # 从后往前删除，确保删除不会影响索引
-        print(rows_to_delete)
-        for row in rows_to_delete:
-            if self.account_table.item(row, 0):
-                account_name = self.account_table.item(row, 0).text()
-                self.db_account.delete_account(account_name)
-            self.account_table.removeRow(row)
+        account_name = self.account_table.item(current_row, 0).text()
+        self.account_table.removeRow(current_row)
+        self.db_account.delete_account(account_name)
 
     def updateAccount(self):
         for row in range(self.account_table.rowCount()):
@@ -173,7 +162,15 @@ class RiskWidget(QWidget):
         self.position_loss_label2 = QLabel("%强平")
         self.money_loss_label = QLabel("权益小于")
         self.money_loss_input = QLineEdit()
-        self.money_loss_label2 = QLabel("强平并转走")
+        self.money_loss_label2 = QLabel("万强平并转走")
+
+        risk_table = RiskTable(DB_PATH)
+        res = risk_table.select_all_risks()
+        if len(res) > 0:
+            self.position_loss_input.setText(str(res[0][2]))
+            self.money_loss_input.setText(str(res[0][3]))
+
+        self.confirm_button = QPushButton("确认")
 
         layout = QVBoxLayout()
 
@@ -191,8 +188,16 @@ class RiskWidget(QWidget):
 
         layout.addLayout(h_box)
         layout.addLayout(h_box2)
-
+        layout.addWidget(self.confirm_button)
+        self.confirm_button.clicked.connect(self.confirm)
         self.setLayout(layout)
+
+    def confirm(self):
+        risk_table = RiskTable(DB_PATH)
+        risk_table.insert_or_update_risk("default", (self.position_loss_input.text()), self.money_loss_input.text())
+        risk_table.close_connection()
+        # 弹出成功消息框
+        QMessageBox.information(self, "成功", "保存成功！")
 
 
 if __name__ == "__main__":
