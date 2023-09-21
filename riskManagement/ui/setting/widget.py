@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QTa
     QPushButton, QHeaderView, QLineEdit, QLabel, QDialog, QMessageBox
 
 from config import DB_PATH
-from riskManagement.utils import AccountTable, RiskTable
+from riskManagement.utils import AccountTable, RiskTable, handle_exceptions
 
 
 def write_data_to_database(table):
@@ -116,6 +116,7 @@ class AccountWidget(QWidget):
         row_count = self.account_table.rowCount()
         self.account_table.insertRow(row_count)
 
+    @handle_exceptions
     def addAccount(self):
         current_row = self.account_table.currentRow()
         account_name = self.account_table.item(current_row, 0).text()
@@ -126,6 +127,7 @@ class AccountWidget(QWidget):
         self.db_account.insert_account(account_name, transaction_account, transaction_password, fund_password)
         QMessageBox.information(self, "成功", "插入账户成功！")
 
+    @handle_exceptions
     def deleteAccount(self):
         current_row = self.account_table.currentRow()
 
@@ -138,6 +140,7 @@ class AccountWidget(QWidget):
         # 弹出成功消息框
         QMessageBox.information(self, "成功", "删除账户成功！")
 
+    @handle_exceptions
     def updateAccount(self):
         for row in range(self.account_table.rowCount()):
             account_name_item = self.account_table.item(row, 0)
@@ -172,7 +175,7 @@ class RiskWidget(QWidget):
         res = risk_table.select_all_risks()
         if len(res) > 0:
             self.position_loss_input.setText(str(res[0][2]))
-            self.money_loss_input.setText(str(res[0][3]/10000))
+            self.money_loss_input.setText(str(res[0][3] / 10000))
 
         self.confirm_button = QPushButton("确认")
 

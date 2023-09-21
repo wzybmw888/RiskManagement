@@ -15,7 +15,7 @@ from vnpy_scripttrader import init_cli_trading
 
 from config import DB_PATH
 from riskManagement.ui.setting.widget import SettingsPage
-from riskManagement.utils import AccountTable, RiskTable
+from riskManagement.utils import AccountTable, RiskTable, get_all_active_positions
 
 account_datas = []
 
@@ -173,11 +173,7 @@ class DataThread(QThread):
                     account_datas[self.i]["available"] = str(available)
 
                 # 获取持仓数据
-                new_df_position = engine.get_all_positions(use_df=True)
-                new_df_position = new_df_position.drop(new_df_position[new_df_position['volume'] == 0].index)
-
-                if len(new_df_position)<1:
-                    pass
+                new_df_position = get_all_active_positions(engine)
 
                 # 判断持仓数据是否变化
                 if not new_df_position.equals(df_position):
@@ -243,7 +239,6 @@ class DataThread(QThread):
                                              volume=volume[i][0])
 
             except Exception as e:
-                print(e)
                 now = datetime.datetime.now()
                 formatted_date_time = now.strftime("%Y-%m-%d %H:%M:%S")
                 self.message.emit("正在获取数据,等待中....上次连接时间为：" + formatted_date_time)
@@ -262,10 +257,3 @@ class DataThread(QThread):
             return math.floor(price / multiple) * multiple
         else:
             raise ValueError("Invalid variable value. Must be 'long' or 'short'.")
-
-
-if __name__ == "__main__":
-    app = QApplication([])
-    window = MainPage()
-    window.show()
-    app.exec()

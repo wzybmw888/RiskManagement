@@ -3,6 +3,8 @@ from PyQt6.QtGui import QShortcut, QKeySequence
 
 import sqlite3
 
+from PyQt6.QtWidgets import QMessageBox
+
 
 class TradeTable:
     def __init__(self, db_file):
@@ -193,3 +195,22 @@ def create_shortcut(target, key):
     shortcut = QShortcut(QKeySequence(key), target)
     shortcut.setContext(Qt.ShortcutContext.WidgetShortcut)
     shortcut.activated.connect(target.click)
+
+
+def get_all_active_positions(engine):
+    new_df_position = engine.get_all_positions(use_df=True)
+    if len(new_df_position) < 1:
+        return new_df_position
+    else:
+        new_df_position = new_df_position.drop(new_df_position[new_df_position['volume'] == 0].index)
+        return new_df_position
+
+
+def handle_exceptions(func):
+    def wrapper(self, *args, **kwargs):
+        try:
+            return func(self, *args, **kwargs)
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"发生了错误：{str(e)}")
+
+    return wrapper
