@@ -193,25 +193,3 @@ def create_shortcut(target, key):
     shortcut = QShortcut(QKeySequence(key), target)
     shortcut.setContext(Qt.ShortcutContext.WidgetShortcut)
     shortcut.activated.connect(target.click)
-
-
-if __name__ == '__main__':
-    # 使用示例
-    db_utils = RiskTable('../mydatabase.db')
-
-    # 插入风控数据
-    db_utils.insert_risk('John', 10000, -500)
-    db_utils.insert_risk('Jane', 20000, -1000)
-
-    # 更新风控数据
-    db_utils.update_risk(1, 12000, -600)
-
-    # 删除风控数据
-    db_utils.delete_risk(2)
-
-    # 查询所有风控数据
-    risks = db_utils.select_all_risks()
-    for risk in risks:
-        print(risk)
-
-    db_utils.close_connection()

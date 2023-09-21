@@ -75,7 +75,6 @@ class AccountWidget(QWidget):
         button_layout.addWidget(update_button)
         button_layout.addWidget(add_account_button)
 
-        account_layout.addLayout(button_layout)
         add_button.clicked.connect(self.addRow)
         delete_button.clicked.connect(self.deleteAccount)
         update_button.clicked.connect(self.updateAccount)
@@ -89,6 +88,7 @@ class AccountWidget(QWidget):
         self.account_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
         account_layout.addWidget(self.account_table)
+        account_layout.addLayout(button_layout)
 
         self.setLayout(account_layout)
         self.db_account = AccountTable(DB_PATH)
@@ -124,6 +124,7 @@ class AccountWidget(QWidget):
         fund_password = self.account_table.item(current_row, 3).text()
 
         self.db_account.insert_account(account_name, transaction_account, transaction_password, fund_password)
+        QMessageBox.information(self, "成功", "插入账户成功！")
 
     def deleteAccount(self):
         current_row = self.account_table.currentRow()
@@ -134,6 +135,8 @@ class AccountWidget(QWidget):
         account_name = self.account_table.item(current_row, 0).text()
         self.account_table.removeRow(current_row)
         self.db_account.delete_account(account_name)
+        # 弹出成功消息框
+        QMessageBox.information(self, "成功", "删除账户成功！")
 
     def updateAccount(self):
         for row in range(self.account_table.rowCount()):
@@ -148,6 +151,7 @@ class AccountWidget(QWidget):
             fund_password = fund_password_item.text()
 
             self.db_account.update_account(account_name, transaction_account, transaction_password, fund_password)
+        QMessageBox.information(self, "成功", "更新账户成功！")
 
     def closeEvent(self, event):
         self.db_account.close_connection()
@@ -168,7 +172,7 @@ class RiskWidget(QWidget):
         res = risk_table.select_all_risks()
         if len(res) > 0:
             self.position_loss_input.setText(str(res[0][2]))
-            self.money_loss_input.setText(str(res[0][3]))
+            self.money_loss_input.setText(str(res[0][3]/10000))
 
         self.confirm_button = QPushButton("确认")
 
@@ -194,7 +198,8 @@ class RiskWidget(QWidget):
 
     def confirm(self):
         risk_table = RiskTable(DB_PATH)
-        risk_table.insert_or_update_risk("default", (self.position_loss_input.text()), self.money_loss_input.text())
+        risk_table.insert_or_update_risk("default", (self.position_loss_input.text()),
+                                         str(float(self.money_loss_input.text()) * 10000))
         risk_table.close_connection()
         # 弹出成功消息框
         QMessageBox.information(self, "成功", "保存成功！")
