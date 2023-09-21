@@ -7,10 +7,9 @@ import pandas as pd
 from PyQt6.QtCore import QThread, pyqtSignal
 from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel, QTableWidget, \
-    QTableWidgetItem, QHeaderView, QPushButton, QHBoxLayout
+    QTableWidgetItem, QHeaderView,  QHBoxLayout
 from vnpy.trader.constant import Direction
 from vnpy.trader.object import OrderData, ContractData
-from vnpy.trader.utility import load_json
 from vnpy_ctp import CtpGateway
 from vnpy_scripttrader import init_cli_trading
 
@@ -174,10 +173,10 @@ class DataThread(QThread):
                     account_datas[self.i]["available"] = str(available)
 
                 # 获取持仓数据
-                new_df_position: pd.DataFrame = engine.get_all_positions(use_df=True)
-                if new_df_position is not None:
-                    new_df_position = new_df_position.drop(new_df_position[new_df_position['volume'] == 0].index)
-                else:
+                new_df_position = engine.get_all_positions(use_df=True)
+                new_df_position = new_df_position.drop(new_df_position[new_df_position['volume'] == 0].index)
+
+                if len(new_df_position)<1:
                     pass
 
                 # 判断持仓数据是否变化
