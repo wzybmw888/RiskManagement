@@ -2,6 +2,8 @@ import sys
 
 import qdarkstyle
 from PyQt6.QtWidgets import QApplication
+
+from riskManagement.ui.index.widget import MainPage
 from riskManagement.ui.login.widget import LoginPage
 
 
@@ -14,6 +16,6 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setStyleSheet(qdarkstyle.load_stylesheet())
     # 创建并显示登录窗口
-    login_window = LoginPage()
+    login_window = MainPage()
     login_window.show()
     sys.exit(app.exec())

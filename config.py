@@ -7,4 +7,5 @@ def get_project_root():
     return project_root
 
 
-DB_PATH = os.path.join(get_project_root(), "database.db")
+DB_PATH = os.path.join(get_project_root(), "mydatabase.db")
+

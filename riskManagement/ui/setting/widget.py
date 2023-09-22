@@ -81,11 +81,13 @@ class AccountWidget(QWidget):
         add_account_button.clicked.connect(self.addAccount)
 
         self.account_table = QTableWidget()
-        self.account_table.setColumnCount(4)
+        self.account_table.setColumnCount(9)
         self.account_table.verticalHeader().setVisible(False)  # 取消显示行号
-        self.account_table.setHorizontalHeaderLabels(["账户名称", "交易账号", "交易密码", "资金密码"])
-        # 设置表头的拉伸模式
-        self.account_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.account_table.setHorizontalHeaderLabels(
+            ["账户名称", "交易账号", "交易密码", "资金密码", "经纪商代码", "交易服务器", "行情服务器", "产品名称",
+             "授权编码"])
+        self.account_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+
 
         account_layout.addWidget(self.account_table)
         account_layout.addLayout(button_layout)
@@ -112,22 +114,42 @@ class AccountWidget(QWidget):
             fund_password_item = QTableWidgetItem(data[4])
             self.account_table.setItem(row, 3, fund_password_item)
 
+            commission_broker = QTableWidgetItem(data[5])
+            self.account_table.setItem(row, 4, commission_broker)
+
+            trade_server = QTableWidgetItem(data[6])
+            self.account_table.setItem(row, 5, trade_server)
+
+            quotation_server = QTableWidgetItem(data[7])
+            self.account_table.setItem(row, 6, quotation_server)
+
+            product_name = QTableWidgetItem(data[8])
+            self.account_table.setItem(row, 7, product_name)
+
+            authorization_code = QTableWidgetItem(data[9])
+            self.account_table.setItem(row, 8, authorization_code)
+
     def addRow(self):
         row_count = self.account_table.rowCount()
         self.account_table.insertRow(row_count)
 
-    @handle_exceptions
     def addAccount(self):
         current_row = self.account_table.currentRow()
         account_name = self.account_table.item(current_row, 0).text()
         transaction_account = self.account_table.item(current_row, 1).text()
         transaction_password = self.account_table.item(current_row, 2).text()
         fund_password = self.account_table.item(current_row, 3).text()
+        commission_broker = self.account_table.item(current_row, 4).text()
+        trade_server = self.account_table.item(current_row, 5).text()
+        quotation_server = self.account_table.item(current_row, 6).text()
+        product_name = self.account_table.item(current_row, 7).text()
+        authorization_code = self.account_table.item(current_row, 8).text()
 
-        self.db_account.insert_account(account_name, transaction_account, transaction_password, fund_password)
+        self.db_account.insert_account(account_name, transaction_account, transaction_password, fund_password,
+                                       commission_broker, trade_server, quotation_server
+                                       , product_name, authorization_code)
         QMessageBox.information(self, "成功", "插入账户成功！")
 
-    @handle_exceptions
     def deleteAccount(self):
         current_row = self.account_table.currentRow()
 
@@ -140,20 +162,21 @@ class AccountWidget(QWidget):
         # 弹出成功消息框
         QMessageBox.information(self, "成功", "删除账户成功！")
 
-    @handle_exceptions
     def updateAccount(self):
         for row in range(self.account_table.rowCount()):
-            account_name_item = self.account_table.item(row, 0)
-            transaction_account_item = self.account_table.item(row, 1)
-            transaction_password_item = self.account_table.item(row, 2)
-            fund_password_item = self.account_table.item(row, 3)
+            account_name = self.account_table.item(row, 0).text()
+            transaction_account = self.account_table.item(row, 1).text()
+            transaction_password = self.account_table.item(row, 2).text()
+            fund_password = self.account_table.item(row, 3).text()
+            commission_broker = self.account_table.item(row, 4).text()
+            trade_server = self.account_table.item(row, 5).text()
+            quotation_server = self.account_table.item(row, 6).text()
+            product_name = self.account_table.item(row, 7).text()
+            authorization_code = self.account_table.item(row, 8).text()
 
-            account_name = account_name_item.text()
-            transaction_account = transaction_account_item.text()
-            transaction_password = transaction_password_item.text()
-            fund_password = fund_password_item.text()
-
-            self.db_account.update_account(account_name, transaction_account, transaction_password, fund_password)
+            self.db_account.update_account(account_name, transaction_account, transaction_password, fund_password,
+                                           commission_broker, trade_server, quotation_server
+                                           , product_name, authorization_code)
         QMessageBox.information(self, "成功", "更新账户成功！")
 
     def closeEvent(self, event):
@@ -169,7 +192,7 @@ class RiskWidget(QWidget):
         self.position_loss_label2 = QLabel("%强平")
         self.money_loss_label = QLabel("权益小于")
         self.money_loss_input = QLineEdit()
-        self.money_loss_label2 = QLabel("万强平并转走")
+        self.money_loss_label2 = QLabel("万强平")
 
         risk_table = RiskTable(DB_PATH)
         res = risk_table.select_all_risks()
@@ -205,7 +228,7 @@ class RiskWidget(QWidget):
                                          str(float(self.money_loss_input.text()) * 10000))
         risk_table.close_connection()
         # 弹出成功消息框
-        QMessageBox.information(self, "成功", "保存成功！")
+        QMessageBox.information(self, "成功", "保存成功,数据重启后生效!")
 
 
 if __name__ == "__main__":

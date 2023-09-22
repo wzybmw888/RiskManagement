@@ -89,26 +89,43 @@ class AccountTable:
             transaction_account TEXT,
             transaction_password TEXT,
             fund_password TEXT,
+            commission_broker TEXT,
+            trade_server TEXT,
+            quotation_server TEXT,
+            product_name TEXT,
+            authorization_code TEXT,
             FOREIGN KEY (account_name) REFERENCES account(account_name)
         )
         '''
         self.cursor.execute(create_table_query)
         self.conn.commit()
 
-    def insert_account(self, account_name, transaction_account, transaction_password, fund_password):
+    def insert_account(self, account_name, transaction_account, transaction_password, fund_password, commission_broker,
+                       trade_server, quotation_server
+                       , product_name, authorization_code):
         insert_data_query = '''
-        INSERT INTO account (account_name, transaction_account, transaction_password, fund_password)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO account (account_name, transaction_account, transaction_password, fund_password,commission_broker,trade_server,quotation_server
+                       ,product_name,authorization_code)
+        VALUES (?, ?, ?, ?,?,?,?,?,?)
         '''
-        self.cursor.execute(insert_data_query, (account_name, transaction_account, transaction_password, fund_password))
+        self.cursor.execute(insert_data_query, (
+        account_name, transaction_account, transaction_password, fund_password, commission_broker, trade_server,
+        quotation_server
+        , product_name, authorization_code))
         self.conn.commit()
 
-    def update_account(self, account_name, transaction_account, transaction_password, fund_password):
+    def update_account(self, account_name, transaction_account, transaction_password, fund_password, commission_broker,
+                       trade_server, quotation_server
+                       , product_name, authorization_code):
         update_data_query = '''
-        UPDATE account SET transaction_account=?, transaction_password=?, fund_password=?
+        UPDATE account SET transaction_account=?, transaction_password=?, fund_password=?,commission_broker=?,trade_server=?,quotation_server=?
+                       ,product_name=?,authorization_code=?
         WHERE account_name=?
         '''
-        self.cursor.execute(update_data_query, (transaction_account, transaction_password, fund_password, account_name))
+        self.cursor.execute(update_data_query, (
+        transaction_account, transaction_password, fund_password, account_name, commission_broker, trade_server,
+        quotation_server
+        , product_name, authorization_code))
         self.conn.commit()
 
     def delete_account(self, account_name):
