@@ -3,8 +3,6 @@ from PyQt6.QtGui import QShortcut, QKeySequence
 
 import sqlite3
 
-from PyQt6.QtWidgets import QMessageBox
-
 
 class TradeTable:
     def __init__(self, db_file):
@@ -109,9 +107,9 @@ class AccountTable:
         VALUES (?, ?, ?, ?,?,?,?,?,?)
         '''
         self.cursor.execute(insert_data_query, (
-        account_name, transaction_account, transaction_password, fund_password, commission_broker, trade_server,
-        quotation_server
-        , product_name, authorization_code))
+            account_name, transaction_account, transaction_password, fund_password, commission_broker, trade_server,
+            quotation_server
+            , product_name, authorization_code))
         self.conn.commit()
 
     def update_account(self, account_name, transaction_account, transaction_password, fund_password, commission_broker,
@@ -123,9 +121,9 @@ class AccountTable:
         WHERE account_name=?
         '''
         self.cursor.execute(update_data_query, (
-        transaction_account, transaction_password, fund_password, account_name, commission_broker, trade_server,
-        quotation_server
-        , product_name, authorization_code))
+            transaction_account, transaction_password, fund_password, account_name, commission_broker, trade_server,
+            quotation_server
+            , product_name, authorization_code))
         self.conn.commit()
 
     def delete_account(self, account_name):
@@ -214,20 +212,3 @@ def create_shortcut(target, key):
     shortcut.activated.connect(target.click)
 
 
-def get_all_active_positions(engine):
-    new_df_position = engine.get_all_positions(use_df=True)
-    if len(new_df_position) < 1:
-        return new_df_position
-    else:
-        new_df_position = new_df_position.drop(new_df_position[new_df_position['volume'] == 0].index)
-        return new_df_position
-
-
-def handle_exceptions(func):
-    def wrapper(self, *args, **kwargs):
-        try:
-            return func(self, *args, **kwargs)
-        except Exception as e:
-            QMessageBox.critical(self, "错误", f"发生了错误：{str(e)}")
-
-    return wrapper

@@ -4,7 +4,6 @@ import qdarkstyle
 from PyQt6.QtWidgets import QApplication
 
 from riskManagement.ui.index.widget import MainPage
-from riskManagement.ui.login.widget import LoginPage
 
 
 def read_qss_file(qss_file_name):

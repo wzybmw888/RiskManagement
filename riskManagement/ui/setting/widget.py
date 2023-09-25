@@ -1,8 +1,8 @@
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QTableWidget, QTableWidgetItem, \
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QTableWidget, QTableWidgetItem, \
     QPushButton, QHeaderView, QLineEdit, QLabel, QDialog, QMessageBox
 
 from config import DB_PATH
-from riskManagement.utils import AccountTable, RiskTable, handle_exceptions
+from riskManagement.utils import AccountTable, RiskTable
 
 
 def write_data_to_database(table):
@@ -87,7 +87,6 @@ class AccountWidget(QWidget):
             ["账户名称", "交易账号", "交易密码", "资金密码", "经纪商代码", "交易服务器", "行情服务器", "产品名称",
              "授权编码"])
         self.account_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
-
 
         account_layout.addWidget(self.account_table)
         account_layout.addLayout(button_layout)
@@ -229,10 +228,3 @@ class RiskWidget(QWidget):
         risk_table.close_connection()
         # 弹出成功消息框
         QMessageBox.information(self, "成功", "保存成功,数据重启后生效!")
-
-
-if __name__ == "__main__":
-    app = QApplication([])
-    window = SettingsPage()
-    window.show()
-    app.exec()

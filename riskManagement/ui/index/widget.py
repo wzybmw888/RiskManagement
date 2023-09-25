@@ -1,26 +1,23 @@
-import datetime
 import math
-import sys
 import time
 from typing import Sequence, Optional, List
 
 import pandas as pd
-import qdarkstyle
 from PyQt6.QtCore import QThread, pyqtSignal
 from PyQt6.QtGui import QAction
-from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel, QTableWidget, \
-    QTableWidgetItem, QHeaderView, QHBoxLayout, QScrollArea, QPlainTextEdit
-from vnpy.trader.constant import Direction, OrderType
+from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QTableWidget, \
+    QTableWidgetItem, QHeaderView, QPlainTextEdit
+from vnpy.trader.constant import Direction
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.event import EVENT_LOG
 from vnpy.trader.object import OrderData, ContractData
 from vnpy_ctp import CtpGateway
-from vnpy_scripttrader import init_cli_trading, ScriptEngine
+from vnpy_scripttrader import ScriptEngine
 from vnpy_scripttrader.engine import EVENT_SCRIPT_LOG
 
 from config import DB_PATH
 from riskManagement.ui.setting.widget import SettingsPage
-from riskManagement.utils import AccountTable, RiskTable, get_all_active_positions
+from riskManagement.utils import AccountTable, RiskTable
 from vnpy.event import EventEngine, Event
 
 account_datas: List[dict] = []
@@ -150,7 +147,6 @@ class DataThread(QThread):
             "产品名称": item[8],
             "授权编码": item[9]
         }
-        print(setting)
         event_engine: EventEngine = EventEngine()
         event_engine.register(EVENT_SCRIPT_LOG, self.process_log_event)
         event_engine.register(EVENT_LOG, self.process_log_event)
@@ -289,12 +285,3 @@ class DataThread(QThread):
             self.event_str.pop(0)
 
         self.message.emit(''.join(self.event_str))
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    app.setStyleSheet(qdarkstyle.load_stylesheet())
-    # 创建并显示登录窗口
-    login_window = MainPage()
-    login_window.show()
-    sys.exit(app.exec())
